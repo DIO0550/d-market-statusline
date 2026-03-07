@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Powerline-style status line for Claude Code
-# Displays: path, git branch, changes, model, duration, context usage, cost, tokens
+# Displays: path, git branch, changes, model, duration, context usage
 # Requires: jq, git, Nerd Font compatible terminal
 
 INPUT=$(cat)
@@ -13,9 +13,6 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
 LINES_ADDED=$(echo "$INPUT" | jq -r '.cost.total_lines_added // 0')
 LINES_REMOVED=$(echo "$INPUT" | jq -r '.cost.total_lines_removed // 0')
 DURATION_MS=$(echo "$INPUT" | jq -r '.cost.total_duration_ms // 0')
-COST_USD=$(echo "$INPUT" | jq -r '.cost.total_cost_usd // 0')
-TOTAL_INPUT_TOKENS=$(echo "$INPUT" | jq -r '.context_window.total_input_tokens // 0')
-TOTAL_OUTPUT_TOKENS=$(echo "$INPUT" | jq -r '.context_window.total_output_tokens // 0')
 
 # ── Derived values ──
 
@@ -39,22 +36,6 @@ MINUTES=$(( (DURATION_SEC % 3600) / 60 ))
 # Context percentage with 1 decimal
 CTX_DISPLAY=$(printf "%.1f" "$CTX_PCT")
 
-# Cost display with 4 decimals
-COST_DISPLAY=$(printf "$%.4f" "$COST_USD")
-
-# Token display: format large numbers with K suffix
-_fmt_tokens() {
-  local n=$1
-  if [ "$n" -ge 1000000 ]; then
-    printf "%.1fM" "$(echo "$n / 1000000" | bc -l)"
-  elif [ "$n" -ge 1000 ]; then
-    printf "%.1fK" "$(echo "$n / 1000" | bc -l)"
-  else
-    printf "%d" "$n"
-  fi
-}
-IN_DISPLAY=$(_fmt_tokens "$TOTAL_INPUT_TOKENS")
-OUT_DISPLAY=$(_fmt_tokens "$TOTAL_OUTPUT_TOKENS")
 
 # Model version from ID
 case "$MODEL_ID" in
@@ -98,15 +79,5 @@ L2+="$(_fg $BG2)$(_bg $BG3)${SEP}"
 L2+="$(_fg $FG_LIGHT) Ctx: ${CTX_DISPLAY}% "
 L2+="$(_reset)"
 
-# ── Line 3: [Cost] ▶ [In tokens] ▶ [Out tokens] ──
-L3=""
-L3+="$(_bg $BG1)$(_fg $FG_LIGHT) ${COST_DISPLAY} "
-L3+="$(_fg $BG1)$(_bg $BG2)${SEP}"
-L3+="$(_fg $FG_LIGHT) In: ${IN_DISPLAY} "
-L3+="$(_fg $BG2)$(_bg $BG3)${SEP}"
-L3+="$(_fg $FG_LIGHT) Out: ${OUT_DISPLAY} "
-L3+="$(_reset)"
-
 echo "$L1"
 echo "$L2"
-echo "$L3"
