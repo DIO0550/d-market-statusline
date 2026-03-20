@@ -53,47 +53,22 @@ case "$MODEL_ID" in
   *)        MODEL_VER="$MODEL_DISPLAY" ;;
 esac
 
-# Format reset times (convert to JST)
-_to_jst() {
-  local iso=$1 fmt=$2
-  # Remove fractional seconds
-  local clean=$(echo "$iso" | sed -E 's/\.[0-9]+//')
-  local datetime="${clean:0:19}"   # 2026-03-20T12:00:00
-  local tz_part="${clean:19}"      # Z, +09:00, +0000, etc.
-
-  # Parse source timezone offset in seconds
-  local offset_sec=0
-  case "$tz_part" in
-    Z) offset_sec=0 ;;
-    +*|-*)
-      local sign="${tz_part:0:1}"
-      local tz_clean=$(echo "$tz_part" | tr -d ':')
-      local tz_h=$((10#${tz_clean:1:2}))
-      local tz_m=$((10#${tz_clean:3:2}))
-      offset_sec=$(( tz_h * 3600 + tz_m * 60 ))
-      [ "$sign" = "-" ] && offset_sec=$(( -offset_sec ))
-      ;;
-  esac
-
-  # Parse datetime as UTC, subtract source offset to get true UTC epoch
-  local epoch
-  epoch=$(TZ=UTC date -j -f "%Y-%m-%dT%H:%M:%S" "$datetime" "+%s" 2>/dev/null || \
-          TZ=UTC date -d "${datetime}Z" "+%s" 2>/dev/null) || { echo "--"; return; }
-  epoch=$(( epoch - offset_sec + 32400 ))  # +9h for JST
-
-  # Format as JST (already shifted, so use UTC to avoid tzdata dependency)
-  TZ=UTC date -j -r "$epoch" "+${fmt}" 2>/dev/null || \
-  TZ=UTC date -d "@${epoch}" "+${fmt}" 2>/dev/null || echo "--"
+# Format epoch seconds to JST (supports macOS + Linux, no tzdata needed)
+_epoch_to_jst() {
+  local epoch=$1 fmt=$2
+  local jst_epoch=$(( epoch + 32400 ))  # +9h for JST
+  TZ=UTC date -j -r "$jst_epoch" "+${fmt}" 2>/dev/null || \
+  TZ=UTC date -d "@${jst_epoch}" "+${fmt}" 2>/dev/null || echo "--"
 }
 
 if [ -n "$FIVE_HR_RESETS" ]; then
-  FIVE_HR_RESET_DISPLAY=$(_to_jst "$FIVE_HR_RESETS" "%H:%M")
+  FIVE_HR_RESET_DISPLAY=$(_epoch_to_jst "$FIVE_HR_RESETS" "%H:%M")
 else
   FIVE_HR_RESET_DISPLAY="--:--"
 fi
 
 if [ -n "$SEVEN_DAY_RESETS" ]; then
-  SEVEN_DAY_RESET_DISPLAY=$(_to_jst "$SEVEN_DAY_RESETS" "%m/%d %H:%M")
+  SEVEN_DAY_RESET_DISPLAY=$(_epoch_to_jst "$SEVEN_DAY_RESETS" "%m/%d %H:%M")
 else
   SEVEN_DAY_RESET_DISPLAY="--/-- --:--"
 fi
