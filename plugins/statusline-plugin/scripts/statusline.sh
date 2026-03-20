@@ -77,11 +77,13 @@ _to_jst() {
 
   # Parse datetime as UTC, subtract source offset to get true UTC epoch
   local epoch
-  epoch=$(TZ=UTC date -j -f "%Y-%m-%dT%H:%M:%S" "$datetime" "+%s" 2>/dev/null) || { echo "--"; return; }
+  epoch=$(TZ=UTC date -j -f "%Y-%m-%dT%H:%M:%S" "$datetime" "+%s" 2>/dev/null || \
+          TZ=UTC date -d "$datetime" "+%s" 2>/dev/null) || { echo "--"; return; }
   epoch=$(( epoch - offset_sec ))
 
   # Convert UTC epoch to JST
-  TZ=Asia/Tokyo date -j -r "$epoch" "+${fmt}" 2>/dev/null || echo "--"
+  TZ=Asia/Tokyo date -j -r "$epoch" "+${fmt}" 2>/dev/null || \
+  TZ=Asia/Tokyo date -d "@${epoch}" "+${fmt}" 2>/dev/null || echo "--"
 }
 
 if [ -n "$FIVE_HR_RESETS" ]; then
