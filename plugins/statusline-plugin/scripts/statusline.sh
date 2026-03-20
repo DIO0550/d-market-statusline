@@ -73,14 +73,15 @@ else
   SEVEN_DAY_RESET_DISPLAY="--/-- --:--"
 fi
 
-# Format used percentages
-FIVE_HR_DISPLAY="${FIVE_HR_USED:-N/A}"
-SEVEN_DAY_DISPLAY="${SEVEN_DAY_USED:-N/A}"
+# Format used percentages (round to integer to avoid floating-point noise like 28.000000000000004)
+FIVE_HR_DISPLAY=$(printf '%.0f' "${FIVE_HR_USED:-0}" 2>/dev/null || echo "N/A")
+SEVEN_DAY_DISPLAY=$(printf '%.0f' "${SEVEN_DAY_USED:-0}" 2>/dev/null || echo "N/A")
 
 # Progress bar: 20 blocks (each = 5%), narrow-spaced: █ █ █ ░ ░ ░
 THIN_SP=$(printf '\xe2\x80\x89')  # U+2009 thin space
 _progress_bar() {
-  local pct=${1:-0}
+  local pct_raw=${1:-0}
+  local pct=$(printf '%.0f' "$pct_raw")
   local filled=$(( (pct + 2) / 5 ))
   [ "$filled" -gt 20 ] && filled=20
   [ "$filled" -lt 0 ] && filled=0
