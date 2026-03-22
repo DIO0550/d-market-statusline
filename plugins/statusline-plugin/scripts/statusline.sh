@@ -77,15 +77,15 @@ fi
 FIVE_HR_DISPLAY=$(printf '%.0f' "${FIVE_HR_USED:-0}" 2>/dev/null || echo "N/A")
 SEVEN_DAY_DISPLAY=$(printf '%.0f' "${SEVEN_DAY_USED:-0}" 2>/dev/null || echo "N/A")
 
-# Progress bar: 20 blocks (each = 5%), narrow-spaced: █ █ █ ░ ░ ░
+# Progress bar: 10 blocks (each = 10%), narrow-spaced: █ █ █ ░ ░ ░
 THIN_SP=$(printf '\xe2\x80\x89')  # U+2009 thin space
 _progress_bar() {
   local pct_raw=${1:-0}
   local pct=$(printf '%.0f' "$pct_raw")
-  local filled=$(( (pct + 2) / 5 ))
-  [ "$filled" -gt 20 ] && filled=20
+  local filled=$(( (pct + 5) / 10 ))
+  [ "$filled" -gt 10 ] && filled=10
   [ "$filled" -lt 0 ] && filled=0
-  local empty=$((20 - filled))
+  local empty=$((10 - filled))
   local bar=""
   bar+="$(_fg 215)"
   for ((i=0; i<filled; i++)); do
@@ -135,12 +135,12 @@ L2+="$(_reset)"
 
 # ── Line 3: Current  ████░░░░  N%  Reset: HH:MM ──
 L3=""
-L3+="$(_fg $FG_LIGHT) Current  $(_progress_bar "${FIVE_HR_USED:-0}")  $(_fg $FG_LIGHT)${FIVE_HR_DISPLAY}%  Reset: ${FIVE_HR_RESET_DISPLAY} JST"
+L3+="$(_fg $FG_LIGHT) Current  $(_progress_bar "${FIVE_HR_USED:-0}")  $(_fg $FG_LIGHT)${FIVE_HR_DISPLAY}%  ↻ ${FIVE_HR_RESET_DISPLAY}"
 L3+="$(_reset)"
 
 # ── Line 4: Weekly  ████░░░░  N%  Reset: MM/DD HH:MM ──
 L4=""
-L4+="$(_fg $FG_LIGHT) Weekly   $(_progress_bar "${SEVEN_DAY_USED:-0}")  $(_fg $FG_LIGHT)${SEVEN_DAY_DISPLAY}%  Reset: ${SEVEN_DAY_RESET_DISPLAY} JST"
+L4+="$(_fg $FG_LIGHT) Weekly   $(_progress_bar "${SEVEN_DAY_USED:-0}")  $(_fg $FG_LIGHT)${SEVEN_DAY_DISPLAY}%  ↻ ${SEVEN_DAY_RESET_DISPLAY}"
 L4+="$(_reset)"
 
 DIMLINE="$(_fg 240)─────────────────────────────$(_reset)"
