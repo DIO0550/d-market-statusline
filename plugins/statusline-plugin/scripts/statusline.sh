@@ -10,6 +10,7 @@ MODEL_DISPLAY=$(echo "$INPUT" | jq -r '.model.display_name // "Unknown"')
 MODEL_ID=$(echo "$INPUT" | jq -r '.model.id // ""')
 CTX_PCT=$(echo "$INPUT" | jq -r '.context_window.used_percentage // 0')
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
+GIT_WORKTREE=$(echo "$INPUT" | jq -r '.workspace.git_worktree // ""')
 LINES_ADDED=$(echo "$INPUT" | jq -r '.cost.total_lines_added // 0')
 LINES_REMOVED=$(echo "$INPUT" | jq -r '.cost.total_lines_removed // 0')
 DURATION_MS=$(echo "$INPUT" | jq -r '.cost.total_duration_ms // 0')
@@ -32,6 +33,13 @@ if [ "${#SHORT_PATH}" -gt 20 ]; then
   PARENT=$(basename "$(dirname "$CWD")")
   DIR=$(basename "$CWD")
   SHORT_PATH="…/${PARENT}/${DIR}"
+fi
+
+# Worktree indicator
+WORKTREE_LABEL=""
+if [ -n "$GIT_WORKTREE" ]; then
+  WT_NAME=$(basename "$GIT_WORKTREE")
+  WORKTREE_LABEL=" ${WORKTREE_ICON} ${WT_NAME}"
 fi
 
 # Duration: ms → Xhr Ym
@@ -104,6 +112,7 @@ _progress_bar() {
 # ── Powerline characters (requires Nerd Font) ──
 SEP=$(printf '\xee\x82\xb0')
 BRANCH_ICON=$(printf '\xee\x82\xa0')
+WORKTREE_ICON=$(printf '\xef\x86\xbb')  # U+F1BB nf-fa-tree
 
 # ── Colors (256-color mode) — Blue + Orange accent ──
 BG1=24; BG2=31; BG3=172
@@ -119,7 +128,7 @@ _reset() { printf '\033[0m'; }
 L1=""
 L1+="$(_bg $BG1)$(_fg $FG_LIGHT) ${SHORT_PATH} "
 L1+="$(_fg $BG1)$(_bg $BG2)${SEP}"
-L1+="$(_fg $FG_LIGHT) ${BRANCH_ICON} ${BRANCH} "
+L1+="$(_fg $FG_LIGHT) ${BRANCH_ICON} ${BRANCH}${WORKTREE_LABEL} "
 L1+="$(_fg $BG2)$(_bg $BG3)${SEP}"
 L1+="$(_fg $FG_LIGHT) (+${LINES_ADDED},-${LINES_REMOVED}) "
 L1+="$(_reset)"
