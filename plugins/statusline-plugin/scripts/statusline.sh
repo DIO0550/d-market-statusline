@@ -128,7 +128,7 @@ _reset() { printf '\033[0m'; }
 L1=""
 L1+="$(_bg $BG1)$(_fg $FG_LIGHT) ${SHORT_PATH} "
 L1+="$(_fg $BG1)$(_bg $BG2)${SEP}"
-L1+="$(_fg $FG_LIGHT) ${BRANCH_ICON} ${BRANCH}${WORKTREE_LABEL} "
+L1+="$(_fg $FG_LIGHT) ${BRANCH_ICON} ${BRANCH} "
 L1+="$(_fg $BG2)$(_bg $BG3)${SEP}"
 L1+="$(_fg $FG_LIGHT) (+${LINES_ADDED},-${LINES_REMOVED}) "
 L1+="$(_reset)"
@@ -156,6 +156,9 @@ DIMLINE="$(_fg 240)────────────────────�
 echo "$L1"
 echo "$L2"
 echo "$DIMLINE"
+if [ -n "$GIT_WORKTREE" ]; then
+  echo "$(_fg 240) ${WORKTREE_ICON} ${WT_NAME}$(_reset)"
+fi
 echo "$L3"
 echo ""
 echo "$L4"
