@@ -21,6 +21,10 @@ FIVE_HR_RESETS=$(echo "$INPUT" | jq -r '.rate_limits.five_hour.resets_at // ""')
 SEVEN_DAY_USED=$(echo "$INPUT" | jq -r '.rate_limits.seven_day.used_percentage // ""')
 SEVEN_DAY_RESETS=$(echo "$INPUT" | jq -r '.rate_limits.seven_day.resets_at // ""')
 
+# Pull request
+PR_NUM=$(echo "$INPUT" | jq -r '.pr.number // empty')
+PR_URL=$(echo "$INPUT" | jq -r '.pr.url // empty')
+
 # ── Derived values ──
 
 # Git branch
@@ -158,6 +162,9 @@ echo "$L2"
 echo "$DIMLINE"
 if [ -n "$GIT_WORKTREE" ]; then
   echo "$(_fg 240) ${WORKTREE_ICON} ${WT_NAME}$(_reset)"
+fi
+if [ -n "$PR_NUM" ]; then
+  printf ' \e]8;;%s\aPR #%s\e]8;;\a\n' "$PR_URL" "$PR_NUM"
 fi
 echo "$L3"
 echo ""
