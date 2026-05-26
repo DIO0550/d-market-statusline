@@ -164,7 +164,11 @@ if [ -n "$GIT_WORKTREE" ]; then
   echo "$(_fg 240) ${WORKTREE_ICON} ${WT_NAME}$(_reset)"
 fi
 if [ -n "$PR_NUM" ]; then
-  printf ' \e]8;;%s\aPR #%s\e]8;;\a\n' "$PR_URL" "$PR_NUM"
+  if [ ! -f /.dockerenv ] && [ -z "${container:-}" ]; then
+    printf ' \e]8;;%s\aPR %s#%s%s\e]8;;\a\n' "$PR_URL" "$(_fg 208)" "$PR_NUM" "$(_reset)"
+  else
+    printf ' PR %s#%s%s %s\n' "$(_fg 208)" "$PR_NUM" "$(_reset)" "$PR_URL"
+  fi
 fi
 echo "$L3"
 echo ""
